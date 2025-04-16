@@ -757,6 +757,32 @@ const bundles = [
     externals: ['react', 'react-dom', 'util', 'crypto'],
   },
 
+  /******* React Server DOM Vite Plugin *******/
+  {
+    bundleTypes: [ESM_DEV],
+    moduleType: RENDERER_UTILS,
+    entry: 'react-server-dom-vite/plugin',
+    minifyWithProdErrorCodes: false,
+    wrapWithModuleBoundaries: false,
+    externals: [],
+  },
+  // {
+  //   bundleTypes: [ESM_DEV, ESM_PROD],
+  //   moduleType: RENDERER_UTILS,
+  //   entry: 'react-server-dom-vite/plugin-runtime-server',
+  //   minifyWithProdErrorCodes: false,
+  //   wrapWithModuleBoundaries: false,
+  //   externals: ["virtual:react-server-dom-vite/server-references"],
+  // },
+  // {
+  //   bundleTypes: [ESM_DEV, ESM_PROD],
+  //   moduleType: RENDERER_UTILS,
+  //   entry: 'react-server-dom-vite/plugin-runtime-client',
+  //   minifyWithProdErrorCodes: false,
+  //   wrapWithModuleBoundaries: false,
+  //   externals: ["virtual:react-server-dom-vite/client-references"],
+  // },
+
   /******* React Suspense Test Utils *******/
   {
     bundleTypes: [NODE_ES2015],

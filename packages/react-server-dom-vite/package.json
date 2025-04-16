@@ -19,6 +19,7 @@
     "server.node.js",
     "static.js",
     "static.node.js",
+    "esm/",
     "cjs/"
   ],
   "exports": {
@@ -39,6 +40,7 @@
       "default": "./static.js"
     },
     "./static.node": "./static.node.js",
+    "./plugin": "./esm/react-server-dom-vite-plugin.development.js",
     "./src/*": "./src/*.js",
     "./package.json": "./package.json"
   },

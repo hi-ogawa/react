@@ -8,6 +8,7 @@ import {
 	createRunnableDevEnvironment,
 	defineConfig,
 } from "vite";
+import rsc from "react-server-dom-vite/plugin";
 
 // state for build orchestration
 let browserManifest: Manifest;
@@ -169,6 +170,10 @@ export default defineConfig({
 		vitePluginUseServer(),
 		vitePluginSilenceDirectiveBuildWarning(),
 		react(),
+		rsc({
+			getClientReferences: () => clientReferences,
+			getServerReferences: () => serverReferences,
+		}),
 	],
 	builder: {
 		sharedPlugins: true,

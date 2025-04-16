@@ -46,6 +46,14 @@ declare module "react-server-dom-vite/client" {
 	export function encodeReply(v: unknown[]): Promise<string | FormData>;
 }
 
+declare module "react-server-dom-vite/plugin" {
+	const default_: (rscOptions: {
+		getClientReferences: () => Record<string, string>;
+		getServerReferences: () => Record<string, string>;
+	}) => import("vite").Plugin;
+	export default default_;
+}
+
 declare module "virtual:ssr-assets" {
 	export const bootstrapModules: string[];
 }
