@@ -28,6 +28,9 @@ import type {ServerManifest} from './ReactFlightClientConfigBundlerVite';
 
 import {createServerReference as createServerReferenceImpl} from 'react-client/src/ReactFlightReplyClient';
 
+import { setRequireModule, clientReferenceManifest } from './ReactFlightClientConfigBundlerVite';
+export { setRequireModule }
+
 function noServerCall() {
   throw new Error(
     'Server Functions cannot be called during initial render. ' +
@@ -58,7 +61,7 @@ export type Options = {
 
 function createFromNodeStream<T>(
   stream: Readable,
-  serverManifest: ServerManifest,
+  serverManifest: ServerManifest = clientReferenceManifest,
   options?: Options,
 ): Thenable<T> {
   const response: Response = createResponse(

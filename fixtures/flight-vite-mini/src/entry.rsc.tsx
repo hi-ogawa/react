@@ -1,9 +1,5 @@
 import ReactServer from "react-server-dom-vite/server";
 import type { ReactFormState } from "react-dom/client";
-import type {
-	ClientReferenceMetadataManifest,
-	ServerReferenceManifest,
-} from "./types";
 import { fromPipeableToWebReadable } from "./utils/fetch";
 import { Router } from "./app/routes";
 
@@ -21,6 +17,15 @@ export async function handler(
 	url: URL,
 	request: Request,
 ): Promise<RscHandlerResult> {
+	ReactServer.setRequireModule(async (id) => {
+		if (import.meta.env.DEV) {
+			return import(/* @vite-ignore */ id);
+		} else {
+			const references = await import("virtual:build-server-references");
+			return references.default[id]();
+		}
+	});
+
 	// handle action
 	let returnValue: unknown | undefined;
 	let formState: ReactFormState | undefined;
@@ -33,22 +38,15 @@ export async function handler(
 				? await request.formData()
 				: await request.text();
 			const args = await ReactServer.decodeReply(body);
-			const reference =
-				serverReferenceManifest.resolveServerReference(actionId);
-			await reference.preload();
-			const action = await reference.get();
+			const action = await ReactServer.loadServerAction(actionId);
 			returnValue = await (action as any).apply(null, args);
 		} else {
 			// progressive enhancement
 			const formData = await request.formData();
-			const decodedAction = await ReactServer.decodeAction(
-				formData,
-				serverReferenceManifest,
-			);
+			const decodedAction = await ReactServer.decodeAction(formData);
 			formState = await ReactServer.decodeFormState(
 				await decodedAction(),
 				formData,
-				serverReferenceManifest,
 			);
 		}
 	}
@@ -61,7 +59,7 @@ export async function handler(
 				returnValue,
 				formState,
 			},
-			clientReferenceMetadataManifest,
+			undefined,
 			{},
 		),
 	);
@@ -70,31 +68,3 @@ export async function handler(
 		stream,
 	};
 }
-
-const serverReferenceManifest: ServerReferenceManifest = {
-	resolveServerReference(reference: string) {
-		const [id, name] = reference.split("#");
-		let resolved: unknown;
-		return {
-			async preload() {
-				let mod: Record<string, unknown>;
-				if (import.meta.env.DEV) {
-					mod = await import(/* @vite-ignore */ id);
-				} else {
-					const references = await import("virtual:build-server-references");
-					mod = await references.default[id]();
-				}
-				resolved = mod[name];
-			},
-			get() {
-				return resolved;
-			},
-		};
-	},
-};
-
-const clientReferenceMetadataManifest: ClientReferenceMetadataManifest = {
-	resolveClientReferenceMetadata(metadata) {
-		return metadata.$$id;
-	},
-};

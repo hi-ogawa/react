@@ -67,3 +67,38 @@ export function getServerReferenceLocation<T>(
 ): void | Error {
   return serverReference.$$location;
 }
+
+let requireModule_;
+
+export function setRequireModule(fn) {
+  requireModule_ = fn;
+}
+
+export function loadServerAction(id) {
+  const [id2, name] = id.split("#");
+  return requireModule_(id2).then(mod => mod[name])
+}
+
+export const serverReferenceManifest = {
+  resolveServerReference(reference) {
+    const [id, name] = reference.split("#");
+    let resolved;
+    return {
+      preload() {
+        return requireModule_(id).then(mod => {
+          resolved = mod[name];
+        })
+      },
+      get() {
+        return resolved;
+      },
+    };
+  },
+};
+
+export const clientReferenceMetadataManifest =
+	{
+		resolveClientReferenceMetadata(metadata) {
+			return metadata.$$id;
+		},
+	}

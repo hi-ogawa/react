@@ -3,7 +3,6 @@ import ReactClient from "react-server-dom-vite/client";
 import ReactDomServer from "react-dom/server";
 import type { ModuleRunner } from "vite/module-runner";
 import type { ServerPayload } from "./entry.rsc";
-import { clientReferenceManifest } from "./utils/client-reference";
 import {
 	createRequest,
 	fromPipeableToWebReadable,
@@ -16,6 +15,18 @@ export default async function handler(
 	req: IncomingMessage,
 	res: ServerResponse,
 ) {
+	ReactClient.setRequireModule(async (id) => {
+		// NOTE:
+		// prepareDestination-like ssr modulepreload injection is expected to be implemented
+		// on user land here (e.g. by ReactDOM.preloadModule) since it requires framework-specific multi build metadata
+		if (import.meta.env.DEV) {
+			return import(/* @vite-ignore */ id);
+		} else {
+			const references = await import("virtual:build-client-references");
+			return references.default[id]();
+		}
+	});
+
 	const request = createRequest(req, res);
 	const url = new URL(request.url);
 	const rscEntry = await importRscEntry();
@@ -35,14 +46,16 @@ export default async function handler(
 
 	const payload = await ReactClient.createFromNodeStream<ServerPayload>(
 		fromWebToNodeReadable(flightStream1),
-		clientReferenceManifest,
+		undefined,
 	);
 
 	const ssrAssets = await import("virtual:ssr-assets");
 
 	const htmlStream = fromPipeableToWebReadable(
 		ReactDomServer.renderToPipeableStream(payload.root, {
-			bootstrapModules: ssrAssets.bootstrapModules,
+			bootstrapModules: url.search.includes("__nojs")
+				? []
+				: ssrAssets.bootstrapModules,
 			// @ts-ignore no type?
 			formState: payload.formState,
 		}),

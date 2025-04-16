@@ -3,7 +3,7 @@
 declare module "react-server-dom-vite/server" {
 	export function renderToPipeableStream<T>(
 		data: T,
-		manifest: import(".").ClientReferenceMetadataManifest,
+		manifest?: import(".").ClientReferenceMetadataManifest,
 		opitons?: unknown,
 	): import("react-dom/server").PipeableStream;
 
@@ -11,39 +11,45 @@ declare module "react-server-dom-vite/server" {
 
 	export function decodeAction(
 		body: FormData,
-		manifest: import(".").ServerReferenceManifest,
+		manifest?: import(".").ServerReferenceManifest,
 	): Promise<() => Promise<unknown>>;
 
 	export function decodeFormState(
 		returnValue: unknown,
 		body: FormData,
-		manifest: import(".").ServerReferenceManifest,
+		manifest?: import(".").ServerReferenceManifest,
 	): Promise<import("react-dom/client").ReactFormState>;
+
+	export function setRequireModule(fn: (id: string) => Promise<unknown>): void;
+
+	export function loadServerAction(id: string): Promise<() => unknown>;
 }
 
 declare module "react-server-dom-vite/client" {
 	export function createFromNodeStream<T>(
 		stream: import("node:stream").Readable,
-		manifest: import(".").ClientReferenceManifest,
+		manifest?: import(".").ClientReferenceManifest,
 	): Promise<T>;
 
 	export function createFromReadableStream<T>(
 		stream: ReadableStream,
-		manifest: import(".").ClientReferenceManifest,
-		options: {
+		manifest?: import(".").ClientReferenceManifest,
+		options?: {
 			callServer: import(".").CallServerFn;
 		},
 	): Promise<T>;
 
 	export function createFromFetch<T>(
 		fetchReturn: ReturnType<typeof fetch>,
-		manifest: unknown,
-		options: {
+		manifest?: unknown,
+		options?: {
 			callServer: import(".").CallServerFn;
 		},
 	): Promise<T>;
 
 	export function encodeReply(v: unknown[]): Promise<string | FormData>;
+
+	export function setRequireModule(fn: (id: string) => Promise<unknown>): void;
 }
 
 declare module "virtual:ssr-assets" {

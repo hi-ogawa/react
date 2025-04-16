@@ -67,3 +67,26 @@ export function preloadModule<T>(
 export function requireModule<T>(metadata: ClientReference<T>): T {
   return metadata.get();
 }
+
+let requireModule_ = null;
+
+export function setRequireModule(fn) {
+	requireModule_ = fn;
+}
+
+export const clientReferenceManifest = {
+  resolveClientReference(reference) {
+    const [id, name] = reference.split("#");
+    let resolved;
+    return {
+      preload() {
+        return requireModule_(id).then(mod => {
+          resolved = mod[name]
+        })
+      },
+      get() {
+        return resolved;
+      },
+    };
+  }
+}

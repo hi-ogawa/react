@@ -3,10 +3,18 @@ import React from "react";
 import ReactDomClient from "react-dom/client";
 import type { ServerPayload } from "./entry.rsc";
 import type { CallServerFn } from "./types";
-import { clientReferenceManifest } from "./utils/client-reference";
 import { getFlightStreamBrowser } from "./utils/stream-script";
 
 async function main() {
+	ReactClient.setRequireModule(async (id) => {
+		if (import.meta.env.DEV) {
+			return import(/* @vite-ignore */ id);
+		} else {
+			const references = await import("virtual:build-client-references");
+			return references.default[id]();
+		}
+	});
+
 	const callServer: CallServerFn = async (id, args) => {
 		const url = new URL(window.location.href);
 		url.searchParams.set("__rsc", id);
@@ -15,7 +23,7 @@ async function main() {
 				method: "POST",
 				body: await ReactClient.encodeReply(args),
 			}),
-			clientReferenceManifest,
+			undefined,
 			{ callServer },
 		);
 		setPayload(payload);
@@ -28,7 +36,7 @@ async function main() {
 		url.searchParams.set("__rsc", "");
 		const payload = await ReactClient.createFromFetch<ServerPayload>(
 			fetch(url),
-			clientReferenceManifest,
+			undefined,
 			{ callServer },
 		);
 		setPayload(payload);
@@ -37,7 +45,7 @@ async function main() {
 	const initialPayload =
 		await ReactClient.createFromReadableStream<ServerPayload>(
 			getFlightStreamBrowser(),
-			clientReferenceManifest,
+			undefined,
 			{ callServer },
 		);
 

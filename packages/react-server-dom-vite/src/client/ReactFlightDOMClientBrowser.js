@@ -38,6 +38,9 @@ export {createTemporaryReferenceSet} from 'react-client/src/ReactFlightTemporary
 
 export type {ServerManifest, TemporaryReferenceSet};
 
+import { setRequireModule, clientReferenceManifest } from './ReactFlightClientConfigBundlerVite';
+export { setRequireModule }
+
 type CallServerCallback = <A, T>(string, args: A) => Promise<T>;
 
 export type Options = {
@@ -49,7 +52,7 @@ export type Options = {
 };
 
 function createResponseFromOptions(
-  serverManifest: ServerManifest,
+  serverManifest: ServerManifest = clientReferenceManifest,
   options: void | Options,
 ) {
   return createResponse(

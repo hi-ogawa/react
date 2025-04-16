@@ -56,6 +56,20 @@ export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTem
 
 export type {TemporaryReferenceSet};
 
+import {
+  setRequireModule, loadServerAction, serverReferenceManifest, clientReferenceMetadataManifest
+} from './ReactFlightServerConfigViteBundler'
+
+export { setRequireModule, loadServerAction }
+
+function decodeActionVite(body) {
+  return decodeAction(body, serverReferenceManifest)
+}
+
+function decodeFormStateVite(actionResult, body) {
+  return decodeFormState(actionResult, body, serverReferenceManifest)
+}
+
 function createDrainHandler(destination: Destination, request: Request) {
   return () => startFlowing(request, destination);
 }
@@ -83,7 +97,7 @@ type PipeableStream = {
 
 function renderToPipeableStream(
   model: ReactClientValue,
-  clientManifest: ClientManifest,
+  clientManifest: ClientManifest = clientReferenceMetadataManifest,
   options?: Options,
 ): PipeableStream {
   const request = createRequest(
@@ -158,7 +172,7 @@ type StaticResult = {
 
 function prerenderToNodeStream(
   model: ReactClientValue,
-  clientManifest: ClientManifest,
+  clientManifest: ClientManifest = clientReferenceMetadataManifest,
   options?: PrerenderOptions,
 ): Promise<StaticResult> {
   return new Promise((resolve, reject) => {
@@ -205,7 +219,7 @@ function prerenderToNodeStream(
 
 function decodeReplyFromBusboy<T>(
   busboyStream: Busboy,
-  serverManifest: ServerManifest,
+  serverManifest: ServerManifest = serverReferenceManifest,
   options?: {temporaryReferences?: TemporaryReferenceSet},
 ): Thenable<T> {
   const response = createResponse(
@@ -265,7 +279,7 @@ function decodeReplyFromBusboy<T>(
 
 function decodeReply<T>(
   body: string | FormData,
-  serverManifest: ServerManifest,
+  serverManifest: ServerManifest = serverReferenceManifest,
   options?: {temporaryReferences?: TemporaryReferenceSet},
 ): Thenable<T> {
   if (typeof body === 'string') {
@@ -289,6 +303,6 @@ export {
   prerenderToNodeStream,
   decodeReplyFromBusboy,
   decodeReply,
-  decodeAction,
-  decodeFormState,
+  decodeActionVite as decodeAction,
+  decodeFormStateVite as decodeFormState,
 };

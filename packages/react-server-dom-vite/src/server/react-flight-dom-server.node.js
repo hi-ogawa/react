@@ -17,4 +17,6 @@ export {
   registerServerReference,
   registerClientReference,
   createTemporaryReferenceSet,
+  setRequireModule,
+  loadServerAction,
 } from './ReactFlightDOMServerNode';
